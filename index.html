@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giải Mã & Quản Lý Căng Thẳng: Khoa Học Thần Kinh</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Heroicons SVG Icons -->
+    <script src="https://unpkg.com/heroicons@2.1.1/24/outline/esm/index.js" type="module"></script>
+    <script src="https://unpkg.com/heroicons@2.1.1/24/solid/esm/index.js" type="module"></script>
+
+    <!-- Chosen Palette: Modern Calm (Deep Teal & Warm Earth) -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#F9F9F8',       /* Light Grayish White */
+                        text: '#1F2937',     /* Deep Gray Black */
+                        primary: '#2C7A7B',  /* Deep Teal */
+                        secondary: '#C05621',/* Warm Earthy Orange */
+                        accent: '#D69E2E',   /* Mustard Yellow */
+                        surface: '#FFFFFF',
+                        subtle: '#F3F4F6'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                        'medium': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #F9F9F8;
+            color: #1F2937;
+        }
+
+        /* Mandatory Chart Container Styling */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Custom Scrollbar for clean look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F9F9F8;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #C05621;
+            border-radius: 4px;
+        }
+
+        /* Breathing Animation Circle */
+        .breath-circle {
+            width: 100px;
+            height: 100px;
+            background: conic-gradient(from 180deg at 50% 50%, #2C7A7B 0deg, #81E6D9 180deg, #2C7A7B 360deg);
+            border-radius: 50%;
+            margin: 0 auto;
+            transition: all 4s ease-in-out;
+            opacity: 0.8;
+            box-shadow: 0 0 20px rgba(44, 122, 123, 0.4);
+        }
+        .inhale {
+            transform: scale(1.5);
+            opacity: 1;
+            box-shadow: 0 0 40px rgba(44, 122, 123, 0.6);
+        }
+        
+        /* Flowchart Connector Line */
+        .flow-line {
+            flex-grow: 1;
+            height: 3px;
+            background: linear-gradient(to right, #C05621, #D69E2E);
+            position: relative;
+            min-width: 30px;
+            border-radius: 2px;
+        }
+        .flow-line::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: -5px;
+            width: 0; 
+            height: 0; 
+            border-top: 7px solid transparent;
+            border-bottom: 7px solid transparent;
+            border-left: 10px solid #D69E2E;
+        }
+
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: transparent;
+        }
+
+        /* Gradient Backgrounds for Sections */
+        .bg-gradient-hero {
+            background: linear-gradient(135deg, #FFFFFF 0%, #F0FDF4 100%);
+        }
+        .bg-gradient-toolkit {
+            background: linear-gradient(135deg, #FFFFFF 0%, #FEF3C7 100%);
+        }
+        .bg-gradient-resilience {
+            background: linear-gradient(135deg, #FFFFFF 0%, #ECFDF5 100%);
+        }
+
+        /* Tool card gradient border on hover */
+        .tool-card {
+            background-clip: padding-box;
+            border: 4px solid transparent;
+        }
+        .tool-card[data-category="sensory"]:hover {
+            background: linear-gradient(#fff, #fff) padding-box, linear-gradient(to right, #2C7A7B, #81E6D9) border-box;
+        }
+        .tool-card[data-category="physical"]:hover {
+            background: linear-gradient(#fff, #fff) padding-box, linear-gradient(to right, #C05621, #F6AD55) border-box;
+        }
+        .tool-card[data-category="cognitive"]:hover {
+            background: linear-gradient(#fff, #fff) padding-box, linear-gradient(to right, #D69E2E, #FBBF24) border-box;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased leading-relaxed bg-bg text-text">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-lg shadow-soft border-b border-subtle">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-primary mr-2">
+                        <path d="M11.47 1.72a.75.75 0 0 1 1.06 0l3 3a.75.75 0 0 1-1.06 1.06l-1.72-1.72V21a.75.75 0 0 1-1.5 0V4.06l-1.72 1.72a.75.75 0 0 1-1.06-1.06l3-3Z" />
+                        <path d="M3 9.75a.75.75 0 0 1 1.5 0v9.19l2.72-2.72a.75.75 0 0 1 1.06 1.06l-4 4a.75.75 0 0 1-1.06 0l-4-4a.75.75 0 0 1 1.06-1.06l2.72 2.72V9.75Z" />
+                    </svg>
+                    <span class="text-2xl font-serif font-bold text-primary">NeuroCalm</span>
+                </div>
+                <div class="hidden sm:flex space-x-8 items-center">
+                    <button onclick="scrollToSection('hero')" class="text-text hover:text-secondary font-medium transition">Tổng Quan</button>
+                    <button onclick="scrollToSection('mechanism')" class="text-text hover:text-secondary font-medium transition">Cơ Chế</button>
+                    <button onclick="scrollToSection('toolkit')" class="text-text hover:text-secondary font-medium transition">Công Cụ</button>
+                    <button onclick="scrollToSection('resilience')" class="text-text hover:text-secondary font-medium transition">Sức Bền</button>
+                </div>
+                <!-- Mobile menu button placeholder -->
+                <div class="flex items-center sm:hidden">
+                    <button class="text-text font-bold">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-24">
+
+        <!-- HERO SECTION -->
+        <section id="hero" class="text-center space-y-8 pt-12 bg-gradient-hero rounded-3xl p-12 shadow-medium">
+            <h1 class="text-5xl md:text-6xl font-serif font-bold text-text">
+                Giải Mã <span class="text-secondary">Căng Thẳng</span> <br>
+                <span class="text-2xl md:text-3xl font-light italic text-primary mt-3 block">Chiến Lược Dựa Trên Khoa Học Thần Kinh</span>
+            </h1>
+            <p class="max-w-3xl mx-auto text-xl text-gray-600 leading-relaxed font-medium">
+                Khám phá cách bộ não cổ xưa của chúng ta phản ứng với thế giới hiện đại. Chuyển hóa từ phản ứng hoảng loạn sang phản hồi chủ động bằng cách hiểu rõ cơ chế sinh học của chính bạn.
+            </p>
+            <div class="p-8 bg-white rounded-2xl shadow-soft border-l-8 border-secondary text-left max-w-4xl mx-auto mt-10">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-secondary mb-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                <p class="font-serif italic text-xl text-gray-700">"Căng thẳng không phải là sự yếu đuối. Đó là một sự mất tương thích về mặt sinh hóa giữa bản năng sinh tồn cổ xưa và các tác nhân gây căng thẳng hiện đại."</p>
+            </div>
+        </section>
+
+        <!-- SECTION 1: THE MECHANISM (Comparison & Radar Charts) -->
+        <section id="mechanism" class="scroll-mt-32">
+            <div class="space-y-4 mb-12 text-center max-w-3xl mx-auto">
+                <h2 class="text-4xl font-serif font-bold text-text relative inline-block pb-3 after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-24 after:h-1 after:bg-primary after:rounded-full">1. Cơ Chế Sinh Học</h2>
+                <p class="text-lg text-gray-600 mt-6">
+                    Để kiểm soát căng thẳng, trước hết ta cần hiểu nguồn gốc của nó. Phần này phân tích sự chênh lệch giữa mối đe dọa thực tế và phản ứng của não bộ, đồng thời hiển thị "ly sinh tố" hóa chất độc hại được giải phóng vào cơ thể khi Hạch hạnh nhân (Amygdala) bấm nút báo động.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+                <!-- Chart 1: The Mismatch -->
+                <div class="bg-white p-8 rounded-3xl shadow-medium border border-subtle">
+                    <h3 class="text-2xl font-bold text-primary mb-6 text-center">Nghịch Lý: Hạch Hạnh Nhân vs. Thực Tế</h3>
+                    <div class="flex justify-center space-x-4 mb-8">
+                        <button onclick="updateMismatchChart('ancient')" class="px-6 py-2 text-sm font-semibold rounded-full bg-subtle hover:bg-secondary hover:text-white transition-colors shadow-sm" id="btn-ancient">Thời Nguyên Thủy</button>
+                        <button onclick="updateMismatchChart('modern')" class="px-6 py-2 text-sm font-semibold rounded-full bg-primary text-white shadow-medium transition-colors" id="btn-modern">Văn Phòng Hiện Đại</button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="mismatchChart"></canvas>
+                    </div>
+                    <p class="text-base text-gray-500 mt-6 italic text-center font-medium" id="mismatchText">
+                        Ở văn phòng, mối nguy hiểm sinh tồn gần như bằng không, nhưng mức độ báo động của não bộ đối với Deadline và Email lại cao tương đương với việc gặp thú dữ.
+                    </p>
+                </div>
+
+                <!-- Chart 2: Chemical Cocktail -->
+                <div class="bg-white p-8 rounded-3xl shadow-medium border border-subtle">
+                    <h3 class="text-2xl font-bold text-secondary mb-6 text-center">"Ly Sinh Tố" Hóa Chất</h3>
+                    <div class="chart-container">
+                        <canvas id="chemicalChart"></canvas>
+                    </div>
+                    <div class="mt-8 space-y-3 text-sm font-medium">
+                        <div class="flex items-center p-3 rounded-lg bg-accent/10 border border-accent/20">
+                            <span class="w-4 h-4 rounded-full bg-accent mr-3 shadow-sm"></span>
+                            <span><strong>Cortisol:</strong> Năng lượng tức thời, gây lo âu & mờ mịt.</span>
+                        </div>
+                        <div class="flex items-center p-3 rounded-lg bg-secondary/10 border border-secondary/20">
+                            <span class="w-4 h-4 rounded-full bg-secondary mr-3 shadow-sm"></span>
+                            <span><strong>Adrenaline:</strong> Tim đập nhanh để chạy trốn (nhưng ta lại ngồi im).</span>
+                        </div>
+                        <div class="flex items-center p-3 rounded-lg bg-primary/10 border border-primary/20">
+                            <span class="w-4 h-4 rounded-full bg-primary mr-3 shadow-sm"></span>
+                            <span><strong>Dopamine/Serotonin:</strong> Sự bình tĩnh & hạnh phúc (giảm mạnh khi stress).</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The Broken Cycle Diagram -->
+            <div class="mt-20 bg-white p-12 rounded-3xl shadow-medium border border-subtle relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-secondary to-accent"></div>
+                <h3 class="text-2xl font-bold text-text mb-10 text-center">Chu Kỳ Căng Thẳng Bị Tắc Nghẽn</h3>
+                <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto text-lg font-medium">
+                    Trong tự nhiên, chu kỳ kết thúc bằng hành động vật lý. Ở văn phòng, chúng ta bỏ qua bước "Hành động", khiến năng lượng độc hại tích tụ.
+                </p>
+                
+                <div class="flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 text-center">
+                    
+                    <!-- Step 1 -->
+                    <div class="w-full md:w-1/5 group z-10">
+                        <div class="w-20 h-20 mx-auto bg-subtle rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-secondary group-hover:text-white transition-all shadow-soft group-hover:shadow-medium group-hover:scale-110">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                            </svg>
+                        </div>
+                        <h4 class="font-bold text-lg">Kích Hoạt</h4>
+                        <p class="text-sm text-gray-500 font-medium">Email/Deadline</p>
+                    </div>
+
+                    <!-- Arrow -->
+                    <div class="hidden md:block flow-line"></div>
+
+                    <!-- Step 2 -->
+                    <div class="w-full md:w-1/5 group z-10">
+                        <div class="w-20 h-20 mx-auto bg-subtle rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-accent group-hover:text-white transition-all shadow-soft group-hover:shadow-medium group-hover:scale-110">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-4.5m-1.5 4.5a6.01 6.01 0 0 1-1.5-4.5m0 0A6.01 6.01 0 0 1 12 3a6.01 6.01 0 0 1 1.5 5.25m-1.5 4.5v4.5m0-4.5a6.01 6.01 0 0 0 1.5 4.5m-1.5-4.5a6.01 6.01 0 0 1-1.5 4.5m0 0a6.01 6.01 0 0 1 1.5-5.25M12 18v4.5m0-4.5a6.01 6.01 0 0 0 1.5 4.5m-1.5-4.5a6.01 6.01 0 0 1-1.5 4.5m0 0A6.01 6.01 0 0 1 12 18" />
+                            </svg>
+                        </div>
+                        <h4 class="font-bold text-lg">Báo Động</h4>
+                        <p class="text-sm text-gray-500 font-medium">Hạch hạnh nhân</p>
+                    </div>
+
+                    <!-- Arrow -->
+                    <div class="hidden md:block flow-line"></div>
+
+                    <!-- Step 3 -->
+                    <div class="w-full md:w-1/5 group z-10">
+                        <div class="w-20 h-20 mx-auto bg-secondary/10 rounded-2xl flex items-center justify-center text-3xl mb-4 border-2 border-secondary text-secondary animate-pulse shadow-soft group-hover:shadow-medium group-hover:scale-110">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                            </svg>
+                        </div>
+                        <h4 class="font-bold text-lg">Năng Lượng</h4>
+                        <p class="text-sm text-gray-500 font-medium">Hormone tăng cao</p>
+                    </div>
+
+                    <!-- Blockage -->
+                    <div class="hidden md:flex items-center justify-center w-16 text-accent font-black text-4xl z-10">✕</div>
+
+                    <!-- Step 4 (Failed) -->
+                    <div class="w-full md:w-1/5 relative p-4 border-4 border-dashed border-red-300 rounded-3xl bg-red-50 z-10 shadow-soft">
+                        <div class="w-20 h-20 mx-auto bg-white rounded-2xl flex items-center justify-center text-3xl mb-4 text-red-500 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.67.38m-4.5-8.393c-1.006.197-2.018.39-3.035.58m0 0c.02.098.035.2.035.303a.75.75 0 0 0 1.5 0c0-.103-.015-.205-.035-.303m0 0a48.11 48.11 0 0 0 3.035-.58m0 0c.194.165.42.295.67.38m-7.34 0c.25-.085.476-.215.67-.38m-12.75 0c.25.085.476.215.67.38m12.75 0a48.11 48.11 0 0 1-3.413.387c-1.069.16-1.837 1.094-1.837 2.175v4.708c0 .6.248 1.175.67 1.661m0 0c.25-.085.476-.215.67-.38m-12.75 0c.25.085.476.215.67-.38m12.75 0c-.25.085-.476.215-.67.38m-12.75 0c-.25.085-.476.215-.67.38m12.75 0c-.25-.085-.476-.215-.67-.38m-12.75 0c-.25-.085-.476-.215-.67-.38" />
+                            </svg>
+                        </div>
+                        <h4 class="font-bold text-lg text-red-600">Ngồi Yên</h4>
+                        <p class="text-sm text-red-500 font-medium">Không giải phóng</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: THE TOOLKIT (Interactive Cards) -->
+        <section id="toolkit" class="scroll-mt-32 bg-gradient-toolkit p-12 rounded-3xl shadow-medium">
+            <div class="space-y-4 mb-12 text-center max-w-3xl mx-auto">
+                <h2 class="text-4xl font-serif font-bold text-text relative inline-block pb-3 after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-24 after:h-1 after:bg-secondary after:rounded-full">2. Bộ Công Cụ Cấp Cứu</h2>
+                <p class="text-lg text-gray-600 mt-6">
+                    7 kỹ thuật "hack" não bộ để ngắt mạch phản ứng căng thẳng ngay lập tức. Hãy chọn loại kỹ thuật phù hợp với hoàn cảnh của bạn để đánh lừa bộ não rằng "mối nguy hiểm đã qua".
+                </p>
+                
+                <!-- Filters -->
+                <div class="flex flex-wrap justify-center gap-4 mt-10">
+                    <button onclick="filterToolkit('all')" class="filter-btn active px-6 py-3 rounded-xl text-sm font-bold bg-secondary text-white shadow-medium transition-all" data-filter="all">Tất Cả</button>
+                    <button onclick="filterToolkit('sensory')" class="filter-btn px-6 py-3 rounded-xl text-sm font-bold bg-white text-gray-600 hover:bg-subtle shadow-soft hover:shadow-medium transition-all" data-filter="sensory">Giác Quan</button>
+                    <button onclick="filterToolkit('physical')" class="filter-btn px-6 py-3 rounded-xl text-sm font-bold bg-white text-gray-600 hover:bg-subtle shadow-soft hover:shadow-medium transition-all" data-filter="physical">Thể Chất</button>
+                    <button onclick="filterToolkit('cognitive')" class="filter-btn px-6 py-3 rounded-xl text-sm font-bold bg-white text-gray-600 hover:bg-subtle shadow-soft hover:shadow-medium transition-all" data-filter="cognitive">Nhận Thức</button>
+                </div>
+            </div>
+
+            <!-- Tool Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="toolkit-grid">
+                
+                <!-- Tool 1: 5-4-3-2-1 -->
+                <div class="tool-card bg-white p-8 rounded-2xl shadow-medium border-t-8 border-primary card-hover" data-category="sensory">
+                    <div class="flex justify-between items-start mb-6">
+                        <h3 class="font-bold text-xl text-primary">5-4-3-2-1</h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-primary">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
+                    </div>
+                    <p class="text-base text-gray-600 mb-6 h-20 font-medium leading-relaxed">Kéo tâm trí từ lo âu về thực tại bằng cách liệt kê 5 thứ thấy, 4 chạm, 3 nghe, 2 ngửi, 1 nếm.</p>
+                    <button onclick="activateTool('54321')" class="w-full py-3 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all text-sm font-bold shadow-sm">Thực Hành Ngay</button>
+                </div>
+
+                <!-- Tool 2: Breathing -->
+                <div class="tool-card bg-white p-8 rounded-2xl shadow-medium border-t-8 border-primary card-hover" data-category="physical">
+                    <div class="flex justify-between items-start mb-6">
+                        <h3 class="font-bold text-xl text-primary">Thở Dài Hơi</h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-primary">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                        </svg>
+                    </div>
+                    <p class="text-base text-gray-600 mb-6 h-20 font-medium leading-relaxed">Kích hoạt dây thần kinh phế vị. Hít 4s - Giữ 2s - Thở ra 6-8s.</p>
+                    <button onclick="activateTool('breathing')" class="w-full py-3 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all text-sm font-bold shadow-sm">Thực Hành Ngay</button>
+                </div>
+
+                <!-- Tool 3: Writing -->
+                <div class="tool-card bg-white p-8 rounded-2xl shadow-medium border-t-8 border-accent card-hover" data-category="cognitive">
+                    <div class="flex justify-between items-start mb-6">
+                        <h3 class="font-bold text-xl text-accent">Xả Não</h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-accent">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                        </svg>
+                    </div>
+                    <p class="text-base text-gray-600 mb-6 h-20 font-medium leading-relaxed">Viết mọi lo lắng ra giấy. Chuyển dữ liệu từ RAM não bộ sang "ổ cứng" giấy.</p>
+                    <button class="w-full py-3 bg-accent/10 text-accent rounded-xl cursor-not-allowed opacity-60 text-sm font-bold shadow-sm">Lấy Giấy Bút Ra!</button>
+                </div>
+
+                <!-- Tool 4: Physical Release -->
+                <div class="tool-card bg-white p-8 rounded-2xl shadow-medium border-t-8 border-secondary card-hover" data-category="physical">
+                    <div class="flex justify-between items-start mb-6">
+                        <h3 class="font-bold text-xl text-secondary">Xả Thể Chất</h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-secondary">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.678 48.678 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7c-.091 1.209-.138 2.43-.138 3.663a48.678 48.678 0 0 0 .138 3.662 4.006 4.006 0 0 0 3.7 3.7c2.43.223 4.878.334 7.324.334 2.446 0 4.893-.111 7.324-.334a4.006 4.006 0 0 0 3.7-3.7c.092-1.232.138-2.453.138-3.662Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75c0 1.243 1.007 2.25 2.25 2.25s2.25-1.007 2.25-2.25M9.75 9.75c0-1.243 1.007-2.25 2.25-2.25s2.25 1.007 2.25 2.25m0-2.25V5.25m0 9V18.75" />
+                        </svg>
+                    </div>
+                    <p class="text-base text-gray-600 mb-6 h-20 font-medium leading-relaxed">Lắc người, đi bộ nhanh, nhảy. Mô phỏng hành động "bỏ chạy" để đốt hormone.</p>
+                    <button class="w-full py-3 bg-secondary/10 text-secondary rounded-xl cursor-not-allowed opacity-60 text-sm font-bold shadow-sm">Đứng Dậy Ngay!</button>
+                </div>
+
+                <!-- Tool 5: Single Task -->
+                <div class="tool-card bg-white p-8 rounded-2xl shadow-medium border-t-8 border-accent card-hover" data-category="cognitive">
+                    <div class="flex justify-between items-start mb-6">
+                        <h3 class="font-bold text-xl text-accent">Một Nhiệm Vụ</h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-accent">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9 3.75 3.75M9 15v4.5M9 15h4.5M9 15l5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h-4.5M15 15v4.5M15 15l-5.25 5.25" />
+                        </svg>
+                    </div>
+                    <p class="text-base text-gray-600 mb-6 h-20 font-medium leading-relaxed">Chỉ làm 1 việc duy nhất. Đánh lừa Hạch hạnh nhân rằng đe dọa đã được kiểm soát.</p>
+                    <button class="w-full py-3 bg-accent/10 text-accent rounded-xl cursor-not-allowed opacity-60 text-sm font-bold shadow-sm">Tập Trung Ngay</button>
+                </div>
+
+                <!-- Tool 6: Tidying -->
+                <div class="tool-card bg-white p-8 rounded-2xl shadow-medium border-t-8 border-primary card-hover" data-category="sensory">
+                    <div class="flex justify-between items-start mb-6">
+                        <h3 class="font-bold text-xl text-primary">Dọn Dẹp Nhanh</h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-primary">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25h16.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25m-16.5 0v-1.5a2.25 2.25 0 0 1 2.25-2.25h3.375a2.25 2.25 0 0 1 2.25 2.25v1.5m-6.75 0h6.75m0 0v-1.5a2.25 2.25 0 0 1 2.25-2.25h3.375a2.25 2.25 0 0 1 2.25 2.25v1.5m-6.75 0h6.75" />
+                        </svg>
+                    </div>
+                    <p class="text-base text-gray-600 mb-6 h-20 font-medium leading-relaxed">Sắp xếp bàn 5 phút. Môi trường trật tự gửi tín hiệu an tâm.</p>
+                    <button class="w-full py-3 bg-primary/10 text-primary rounded-xl cursor-not-allowed opacity-60 text-sm font-bold shadow-sm">Bắt Đầu 5 Phút</button>
+                </div>
+
+                 <!-- Tool 7: Co-regulation -->
+                 <div class="tool-card bg-white p-8 rounded-2xl shadow-medium border-t-8 border-secondary card-hover md:col-span-2 lg:col-span-3" data-category="sensory">
+                    <div class="flex justify-between items-start mb-6">
+                        <h3 class="font-bold text-xl text-secondary">Đồng Điều Chỉnh</h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-secondary">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
+                        </svg>
+                    </div>
+                    <p class="text-base text-gray-600 mb-2 font-medium leading-relaxed">Kết nối với người bình tĩnh. Mượn hệ thần kinh của họ để làm dịu mình.</p>
+                </div>
+            </div>
+
+            <!-- Interactive Breathing Modal (Hidden by default) -->
+            <div id="breathing-modal" class="hidden fixed inset-0 bg-primary/80 z-50 flex items-center justify-center backdrop-blur-md">
+                <div class="bg-white p-12 rounded-3xl max-w-md w-full text-center shadow-2xl">
+                    <h3 class="text-3xl font-bold text-primary mb-8">Hít Thở Điều Hòa</h3>
+                    <div class="breath-circle mb-8 flex items-center justify-center text-white font-bold text-2xl" id="breath-visual">Hít</div>
+                    <p class="text-gray-700 mb-8 text-xl font-medium" id="breath-text">Hít vào bằng mũi...</p>
+                    <button onclick="closeModal('breathing-modal')" class="px-8 py-3 bg-subtle rounded-full hover:bg-gray-300 font-bold text-gray-700 transition-colors shadow-sm">Kết Thúc</button>
+                </div>
+            </div>
+            
+            <!-- 54321 Modal (Hidden by default) -->
+            <div id="54321-modal" class="hidden fixed inset-0 bg-primary/80 z-50 flex items-center justify-center backdrop-blur-md">
+                <div class="bg-white p-12 rounded-3xl max-w-md w-full text-center shadow-2xl">
+                    <h3 class="text-3xl font-bold text-primary mb-8">Kỹ Thuật 5-4-3-2-1</h3>
+                    <div class="text-left space-y-6 text-gray-700 text-xl font-medium">
+                        <p class="flex items-center"><span class="text-3xl mr-4">👀</span> <strong>5</strong> thứ bạn thấy</p>
+                        <p class="flex items-center"><span class="text-3xl mr-4">🖐️</span> <strong>4</strong> thứ bạn chạm được</p>
+                        <p class="flex items-center"><span class="text-3xl mr-4">👂</span> <strong>3</strong> âm thanh bạn nghe</p>
+                        <p class="flex items-center"><span class="text-3xl mr-4">👃</span> <strong>2</strong> mùi hương</p>
+                        <p class="flex items-center"><span class="text-3xl mr-4">👅</span> <strong>1</strong> vị bạn cảm nhận</p>
+                    </div>
+                    <button onclick="closeModal('54321-modal')" class="mt-10 px-8 py-3 bg-subtle rounded-full hover:bg-gray-300 font-bold text-gray-700 transition-colors shadow-sm">Đã Xong</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: RESILIENCE (Interactive Polar Chart) -->
+        <section id="resilience" class="scroll-mt-32 bg-gradient-resilience p-12 rounded-3xl shadow-medium">
+            <div class="space-y-4 mb-12 text-center max-w-3xl mx-auto">
+                <h2 class="text-4xl font-serif font-bold text-text relative inline-block pb-3 after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-24 after:h-1 after:bg-accent after:rounded-full">3. Xây Dựng Sức Bền</h2>
+                <p class="text-lg text-gray-600 mt-6">
+                    Chiến lược dài hạn để không phải lúc nào cũng đi "chữa cháy". Hãy tự đánh giá lối sống hiện tại của bạn để xem "lá chắn" bảo vệ hệ thần kinh của bạn đang mạnh hay yếu ở điểm nào.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center bg-white p-12 rounded-3xl shadow-medium border border-subtle">
+                <!-- Controls -->
+                <div class="space-y-8">
+                    <h3 class="text-2xl font-bold text-text mb-6 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-accent mr-3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+                        </svg>
+                        Tự Đánh Giá (Kéo thanh trượt)
+                    </h3>
+                    
+                    <div class="p-6 bg-primary/5 rounded-2xl border-l-4 border-primary shadow-soft hover:shadow-medium transition-shadow">
+                        <div class="flex justify-between mb-3">
+                            <label class="text-lg font-bold text-primary">Giấc Ngủ (Rửa sạch độc tố)</label>
+                            <span id="val-sleep" class="text-lg font-mono font-bold text-primary">50%</span>
+                        </div>
+                        <input type="range" min="10" max="100" value="50" class="w-full h-3 bg-subtle rounded-full appearance-none cursor-pointer accent-primary" oninput="updateResilience('sleep', this.value)">
+                    </div>
+
+                    <div class="p-6 bg-secondary/5 rounded-2xl border-l-4 border-secondary shadow-soft hover:shadow-medium transition-shadow">
+                        <div class="flex justify-between mb-3">
+                            <label class="text-lg font-bold text-secondary">Vận Động (Đốt Cortisol)</label>
+                            <span id="val-exercise" class="text-lg font-mono font-bold text-secondary">50%</span>
+                        </div>
+                        <input type="range" min="10" max="100" value="50" class="w-full h-3 bg-subtle rounded-full appearance-none cursor-pointer accent-secondary" oninput="updateResilience('exercise', this.value)">
+                    </div>
+
+                    <div class="p-6 bg-accent/5 rounded-2xl border-l-4 border-accent shadow-soft hover:shadow-medium transition-shadow">
+                        <div class="flex justify-between mb-3">
+                            <label class="text-lg font-bold text-accent">Kết Nối Xã Hội (Đồng điều chỉnh)</label>
+                            <span id="val-social" class="text-lg font-mono font-bold text-accent">50%</span>
+                        </div>
+                        <input type="range" min="10" max="100" value="50" class="w-full h-3 bg-subtle rounded-full appearance-none cursor-pointer accent-accent" oninput="updateResilience('social', this.value)">
+                    </div>
+
+                    <div class="p-6 bg-gray-100 rounded-2xl border-l-4 border-gray-400 shadow-soft hover:shadow-medium transition-shadow">
+                        <div class="flex justify-between mb-3">
+                            <label class="text-lg font-bold text-gray-700">Thói Quen/Routine (An toàn)</label>
+                            <span id="val-routine" class="text-lg font-mono font-bold text-gray-700">50%</span>
+                        </div>
+                        <input type="range" min="10" max="100" value="50" class="w-full h-3 bg-subtle rounded-full appearance-none cursor-pointer accent-gray-500" oninput="updateResilience('routine', this.value)">
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div>
+                    <div class="chart-container">
+                        <canvas id="resilienceChart"></canvas>
+                    </div>
+                    <p class="text-center text-base italic text-gray-500 mt-8 font-medium">Biểu đồ thể hiện độ cân bằng và sức mạnh của hệ thống phòng thủ stress.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Conclusion -->
+        <footer class="text-center py-16 border-t border-subtle mt-20 bg-white rounded-t-3xl shadow-soft">
+            <h3 class="text-4xl font-serif font-bold text-text mb-6">Từ "Khỉ Hoảng Loạn" Đến "Khỉ Điềm Tĩnh"</h3>
+            <p class="max-w-2xl mx-auto text-xl text-gray-600 mb-10 font-medium leading-relaxed">
+                Bạn không thể kiểm soát việc sếp gửi email lúc nửa đêm, nhưng bạn có thể kiểm soát cách cơ thể mình xử lý email đó.
+            </p>
+            <div class="inline-block px-10 py-4 bg-primary text-white rounded-full text-lg font-bold shadow-medium hover:shadow-lg transition-shadow hover:scale-105 transform cursor-pointer">
+                Hãy bắt đầu thực hành ngay hôm nay
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        // --- Utility: Wrap Labels ---
+        function wrapLabel(str, maxChars) {
+            if (str.length <= maxChars) return str;
+            const words = str.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+
+            for (let i = 1; i < words.length; i++) {
+                if (currentLine.length + 1 + words[i].length <= maxChars) {
+                    currentLine += ' ' + words[i];
+                } else {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        }
+
+        // --- Global Chart Settings ---
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = '#1F2937';
+        Chart.defaults.font.weight = '500';
+        const tooltipConfig = {
+            backgroundColor: 'rgba(31, 41, 55, 0.9)',
+            titleFont: { size: 14, weight: 'bold', family: "'Inter', sans-serif" },
+            bodyFont: { size: 13, family: "'Inter', sans-serif" },
+            padding: 12,
+            cornerRadius: 8,
+            callbacks: {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    if (Array.isArray(label)) return label.join(' ');
+                    return label;
+                }
+            }
+        };
+
+        // --- 1. Mismatch Chart (Bar) ---
+        let mismatchChartInstance;
+        const mismatchCtx = document.getElementById('mismatchChart').getContext('2d');
+        
+        const mismatchData = {
+            ancient: {
+                data: [90, 10, 5],
+                text: "Trong quá khứ: Thú dữ là mối nguy hiểm thực sự (90%). Hạch hạnh nhân báo động đúng mục đích.",
+                labels: [wrapLabel('Thú Dữ (Nguy Hiểm Thật)', 20), wrapLabel('Thời Tiết/Đói', 20), wrapLabel('Tương Tác Xã Hội', 20)]
+            },
+            modern: {
+                data: [5, 40, 95], 
+                text: "Ngày nay: Nguy hiểm tính mạng rất thấp (5%), nhưng Email và Deadline (95%) lại kích hoạt báo động tương tự.",
+                labels: [wrapLabel('Nguy Hiểm Vật Lý', 20), wrapLabel('Kẹt Xe/Ồn Ào', 20), wrapLabel('Email & Deadline', 20)]
+            }
+        };
+
+        function initMismatchChart() {
+            mismatchChartInstance = new Chart(mismatchCtx, {
+                type: 'bar',
+                data: {
+                    labels: mismatchData.modern.labels,
+                    datasets: [{
+                        label: 'Mức Độ Báo Động Của Não',
+                        data: mismatchData.modern.data,
+                        backgroundColor: ['#CBD5E0', '#D69E2E', '#C05621'],
+                        borderRadius: 8,
+                        borderSkipped: false,
+                        barThickness: 40,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: tooltipConfig
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            max: 100, 
+                            title: { display: true, text: 'Mức Kích Hoạt (%)', font: { weight: 'bold' } },
+                            grid: { color: '#E5E7EB', drawBorder: false }
+                        },
+                        x: {
+                            grid: { display: false, drawBorder: false },
+                            ticks: { font: { weight: '500' } }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+            
+            // Set initial state button styles
+            document.getElementById('btn-modern').classList.add('bg-primary', 'text-white', 'shadow-medium');
+        }
+
+        function updateMismatchChart(mode) {
+            const data = mismatchData[mode];
+            mismatchChartInstance.data.labels = data.labels;
+            mismatchChartInstance.data.datasets[0].data = data.data;
+            mismatchChartInstance.update();
+            
+            document.getElementById('mismatchText').textContent = data.text;
+
+            // Button styling toggle
+            const btnAncient = document.getElementById('btn-ancient');
+            const btnModern = document.getElementById('btn-modern');
+            
+            if(mode === 'ancient') {
+                btnAncient.className = "px-6 py-2 text-sm font-semibold rounded-full bg-primary text-white shadow-medium transition-colors";
+                btnModern.className = "px-6 py-2 text-sm font-semibold rounded-full bg-subtle hover:bg-secondary hover:text-white transition-colors shadow-sm";
+            } else {
+                btnModern.className = "px-6 py-2 text-sm font-semibold rounded-full bg-primary text-white shadow-medium transition-colors";
+                btnAncient.className = "px-6 py-2 text-sm font-semibold rounded-full bg-subtle hover:bg-secondary hover:text-white transition-colors shadow-sm";
+            }
+        }
+
+        // --- 2. Chemical Chart (Radar) ---
+        const chemicalCtx = document.getElementById('chemicalChart').getContext('2d');
+        new Chart(chemicalCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Cortisol (Lo Âu)', 'Adrenaline (Tim Đập)', 'Norepinephrine (Hoảng Loạn)', 'Dopamine (Hạnh Phúc)', 'Serotonin (Bình Tĩnh)'],
+                datasets: [{
+                    label: 'Khi Bị Stress (Văn Phòng)',
+                    data: [90, 85, 80, 20, 15],
+                    backgroundColor: 'rgba(192, 86, 33, 0.2)', // Secondary
+                    borderColor: '#C05621',
+                    pointBackgroundColor: '#C05621',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#C05621',
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }, {
+                    label: 'Trạng Thái Cân Bằng',
+                    data: [30, 40, 30, 70, 80],
+                    backgroundColor: 'rgba(44, 122, 123, 0.2)', // Primary
+                    borderColor: '#2C7A7B',
+                    pointBackgroundColor: '#2C7A7B',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#2C7A7B',
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        position: 'bottom',
+                        labels: { padding: 20, font: { weight: '600' }, usePointStyle: true }
+                    },
+                    tooltip: tooltipConfig
+                },
+                scales: {
+                    r: {
+                        angleLines: { color: '#E5E7EB' },
+                        grid: { color: '#E5E7EB', circular: true },
+                        pointLabels: {
+                            font: { size: 12, family: "'Inter', sans-serif", weight: '600' },
+                            color: '#4B5563'
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 100,
+                        ticks: {
+                            backdropColor: 'transparent',
+                            font: { size: 10 }
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+
+        // --- 3. Resilience Chart (Polar Area) ---
+        let resilienceChart;
+        const resilienceData = [50, 50, 50, 50]; // Initial values
+
+        function initResilienceChart() {
+            const ctx = document.getElementById('resilienceChart').getContext('2d');
+            resilienceChart = new Chart(ctx, {
+                type: 'polarArea',
+                data: {
+                    labels: ['Giấc Ngủ', 'Vận Động', 'Kết Nối', 'Thói Quen'],
+                    datasets: [{
+                        data: resilienceData,
+                        backgroundColor: [
+                            'rgba(44, 122, 123, 0.8)', // Primary
+                            'rgba(192, 86, 33, 0.8)',  // Secondary
+                            'rgba(214, 158, 46, 0.8)', // Accent
+                            'rgba(107, 114, 128, 0.8)'  // Gray
+                        ],
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                        hoverBorderColor: '#ffffff',
+                        hoverBorderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            position: 'right',
+                            labels: { padding: 20, font: { weight: '600' }, usePointStyle: true }
+                        },
+                        tooltip: tooltipConfig
+                    },
+                    scales: {
+                        r: { 
+                            max: 100, 
+                            ticks: { display: false },
+                            grid: { color: '#E5E7EB', circular: true }
+                        }
+                    },
+                    animation: {
+                        duration: 800,
+                        easing: 'easeOutBounce'
+                    }
+                }
+            });
+        }
+
+        function updateResilience(type, value) {
+            document.getElementById(`val-${type}`).innerText = value + '%';
+            let index = 0;
+            if (type === 'sleep') index = 0;
+            if (type === 'exercise') index = 1;
+            if (type === 'social') index = 2;
+            if (type === 'routine') index = 3;
+
+            resilienceChart.data.datasets[0].data[index] = value;
+            resilienceChart.update();
+        }
+
+        // --- Toolkit Interactions ---
+        function filterToolkit(category) {
+            // Update buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if(btn.dataset.filter === category) {
+                    btn.classList.remove('bg-white', 'text-gray-600', 'hover:bg-subtle', 'shadow-soft', 'hover:shadow-medium');
+                    btn.classList.add('bg-secondary', 'text-white', 'shadow-medium');
+                } else {
+                    btn.classList.add('bg-white', 'text-gray-600', 'hover:bg-subtle', 'shadow-soft', 'hover:shadow-medium');
+                    btn.classList.remove('bg-secondary', 'text-white', 'shadow-medium');
+                }
+            });
+
+            // Filter cards
+            const cards = document.querySelectorAll('.tool-card');
+            cards.forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = 'block';
+                    // Add animation class for appearance
+                    card.classList.add('animate-fadeIn');
+                } else {
+                    card.style.display = 'none';
+                    card.classList.remove('animate-fadeIn');
+                }
+            });
+        }
+        // Add simple fade-in animation
+        document.head.insertAdjacentHTML('beforeend', `<style>@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }</style>`);
+
+        // --- Modals & Animations ---
+        function activateTool(toolId) {
+            if (toolId === 'breathing') {
+                const modal = document.getElementById('breathing-modal');
+                modal.classList.remove('hidden');
+                startBreathingAnimation();
+            } else if (toolId === '54321') {
+                document.getElementById('54321-modal').classList.remove('hidden');
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            if (modalId === 'breathing-modal') stopBreathingAnimation();
+        }
+
+        let breathInterval;
+        function startBreathingAnimation() {
+            const circle = document.getElementById('breath-visual');
+            const text = document.getElementById('breath-text');
+            
+            function cycle() {
+                // Inhale (4s)
+                text.innerText = "Hít vào (4s)...";
+                circle.classList.add('inhale');
+                
+                setTimeout(() => {
+                    // Hold (2s)
+                    text.innerText = "Giữ hơi (2s)...";
+                    
+                    setTimeout(() => {
+                        // Exhale (6s)
+                        text.innerText = "Thở ra (6s)...";
+                        circle.classList.remove('inhale');
+                    }, 2000);
+
+                }, 4000);
+            }
+
+            cycle();
+            breathInterval = setInterval(cycle, 12000); // 4+2+6 = 12s total roughly
+        }
+
+        function stopBreathingAnimation() {
+            clearInterval(breathInterval);
+            document.getElementById('breath-visual').classList.remove('inhale');
+        }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initMismatchChart();
+            initResilienceChart();
+        });
+
+    </script>
+</body>
+</html>
