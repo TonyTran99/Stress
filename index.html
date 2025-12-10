@@ -120,9 +120,6 @@
         }
 
         /* Gradient Backgrounds for Sections */
-        .bg-gradient-hero {
-            background: linear-gradient(135deg, #FFFFFF 0%, #F0FDF4 100%);
-        }
         .bg-gradient-toolkit {
             background: linear-gradient(135deg, #FFFFFF 0%, #FEF3C7 100%);
         }
@@ -178,22 +175,54 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-24">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-24">
 
-        <!-- HERO SECTION -->
-        <section id="hero" class="text-center space-y-8 pt-12 bg-gradient-hero rounded-3xl p-12 shadow-medium">
-            <h1 class="text-5xl md:text-6xl font-serif font-bold text-text">
-                Giải Mã <span class="text-secondary">Căng Thẳng</span> <br>
-                <span class="text-2xl md:text-3xl font-light italic text-primary mt-3 block">Chiến Lược Dựa Trên Khoa Học Thần Kinh</span>
-            </h1>
-            <p class="max-w-3xl mx-auto text-xl text-gray-600 leading-relaxed font-medium">
-                Khám phá cách bộ não cổ xưa của chúng ta phản ứng với thế giới hiện đại. Chuyển hóa từ phản ứng hoảng loạn sang phản hồi chủ động bằng cách hiểu rõ cơ chế sinh học của chính bạn.
-            </p>
-            <div class="p-8 bg-white rounded-2xl shadow-soft border-l-8 border-secondary text-left max-w-4xl mx-auto mt-10">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-secondary mb-4">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
-                <p class="font-serif italic text-xl text-gray-700">"Căng thẳng không phải là sự yếu đuối. Đó là một sự mất tương thích về mặt sinh hóa giữa bản năng sinh tồn cổ xưa và các tác nhân gây căng thẳng hiện đại."</p>
+        <!-- NEW HERO BANNER SECTION WITH IMAGE -->
+        <section id="hero" class="relative overflow-hidden rounded-3xl shadow-2xl mb-16 mt-4">
+            
+            <!-- IMAGE BACKGROUND -->
+            <div class="absolute inset-0 z-0">
+                <img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=2000&auto=format&fit=crop" 
+                     alt="Yên bình, thư thái, thiền định" 
+                     class="w-full h-full object-cover opacity-100" />
+            </div>
+
+            <!-- Gradient Overlay (Blend with image for text readability) -->
+            <div class="absolute inset-0 bg-gradient-to-br from-[#2C7A7B]/90 via-[#285E61]/85 to-[#1A365D]/90 z-0 mix-blend-multiply"></div>
+            
+            <!-- Decorative Blobs -->
+            <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-white/10 blur-3xl animate-pulse z-0"></div>
+            <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-secondary/30 blur-3xl z-0"></div>
+            
+            <!-- Banner Content -->
+            <div class="relative z-10 px-6 py-24 md:py-32 text-center max-w-5xl mx-auto">
+                <div class="inline-block px-5 py-2 mb-8 rounded-full bg-white/20 border border-white/30 backdrop-blur-md text-sm font-semibold text-white tracking-widest uppercase shadow-sm">
+                    Sổ Tay Sức Khỏe Tinh Thần
+                </div>
+                
+                <h1 class="text-5xl md:text-7xl font-serif font-bold text-white leading-tight mb-6 tracking-tight drop-shadow-lg">
+                    Giải Mã <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#F6E05E] to-[#F6AD55]">Căng Thẳng</span>
+                </h1>
+                
+                <p class="text-2xl md:text-3xl font-light text-white/95 mb-8 italic font-serif text-shadow-sm">
+                    "Chiến Lược Dựa Trên Khoa Học Thần Kinh"
+                </p>
+                
+                <p class="max-w-3xl mx-auto text-lg md:text-xl text-gray-100 leading-relaxed font-sans mb-12 font-medium opacity-95 drop-shadow-md">
+                    Khám phá cách bộ não cổ xưa của chúng ta phản ứng với thế giới hiện đại. Chuyển hóa từ trạng thái <span class="text-[#F6AD55] font-bold">hoảng loạn</span> sang <span class="text-[#81E6D9] font-bold">phản hồi chủ động</span> bằng cách làm chủ cơ chế sinh học của chính bạn.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row justify-center gap-5">
+                    <button onclick="scrollToSection('mechanism')" class="group px-8 py-4 rounded-full bg-secondary text-white font-bold text-lg shadow-lg hover:bg-[#DD6B20] hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center border border-transparent">
+                        Bắt Đầu Khám Phá
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    </button>
+                    <button onclick="scrollToSection('toolkit')" class="px-8 py-4 rounded-full bg-white/10 backdrop-blur-md border border-white/40 text-white font-bold text-lg hover:bg-white/20 hover:border-white transition-all shadow-lg">
+                        Công Cụ Cấp Cứu
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -202,7 +231,7 @@
             <div class="space-y-4 mb-12 text-center max-w-3xl mx-auto">
                 <h2 class="text-4xl font-serif font-bold text-text relative inline-block pb-3 after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-24 after:h-1 after:bg-primary after:rounded-full">1. Cơ Chế Sinh Học</h2>
                 <p class="text-lg text-gray-600 mt-6">
-                    Để kiểm soát căng thẳng, trước hết ta cần hiểu nguồn gốc của nó. Phần này phân tích sự chênh lệch giữa mối đe dọa thực tế và phản ứng của não bộ, đồng thời hiển thị "ly sinh tố" hóa chất độc hại được giải phóng vào cơ thể khi Hạch hạnh nhân (Amygdala) bấm nút báo động.
+                    Để kiểm soát căng thẳng, trước hết ta cần hiểu nguồn gốc của nó. Phần này phân tích sự chênh lệch giữa mối đe dọa thực tế và phản ứng của não bộ.
                 </p>
             </div>
 
